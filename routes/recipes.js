@@ -22,8 +22,6 @@ router.get("/search", async (req, res, next) => {
 });
 
 
-
-
 router.get("/random", async (req, res, next) => {
   try {
     const number = req.query.number || 3;
@@ -45,7 +43,6 @@ router.get("/recipe/:recipe_id", async (req, res, next) => {
     next(error);
   }
 });
-
 
 
 module.exports = router;

@@ -206,12 +206,6 @@ async function getRecipesPreview(recipes_id_array) {
 
   return recipesDetailsArray;
 }
-    // results from search --> getRecipeDetails by id 
-    // we have the array --> recipes_id_array 
-    // for each id we call to getRecipeDetails function(above)
-    // for each information we get for id we make the recipe preview ! 
-    // we will use this function to display preview of recipes in : random , search , last viewed, faviorites , my meal ...  
-
 
 exports.searchRecipe = searchRecipe;
 exports.getRecipeDetails = getRecipeDetails;
