@@ -34,5 +34,18 @@ router.get("/random", async (req, res, next) => {
   }
 });
 
+router.get("/recipe/:recipe_id", async (req, res, next) => {
+  try {
+    const recipe_id = req.params.recipe_id;
+    console.log("recipe_id = ",recipe_id);
+    //When I try to get full information i will pass in the body if i should get it from the db or from spooncular
+    const recipe = await recipes_utils.getRecipeFullDetails(recipe_id);
+    res.status(200).send(recipe);
+  } catch (error) {
+    next(error);
+  }
+});
+
+
 
 module.exports = router;
