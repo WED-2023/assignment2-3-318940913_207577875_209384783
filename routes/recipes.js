@@ -19,14 +19,25 @@ router.get("/search", async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+});  
 
 /**
  * This path returns a full details of a recipe by its id
  */
-router.get("/:recipeId", async (req, res, next) => {
+// router.get("/:recipeId", async (req, res, next) => {
+//   try {
+//     const recipe = await recipes_utils.getRecipeDetails(req.params.recipeId);
+//     res.send(recipe);
+//   } catch (error) {
+//     next(error);
+//   }
+// });
+
+router.get("/random", async (req, res, next) => {
   try {
-    const recipe = await recipes_utils.getRecipeDetails(req.params.recipeId);
-    res.send(recipe);
+    const number = req.query.number || 3;
+    const randomRecipes = await recipes_utils.getRandomRecipes(number);
+    res.status(200).send(randomRecipes);
   } catch (error) {
     next(error);
   }

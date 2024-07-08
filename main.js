@@ -28,11 +28,11 @@ app.use(express.static(path.join(__dirname, "public"))); //To serve static files
 //local:
 app.use(express.static(path.join(__dirname, "dist")));
 //remote:
-// app.use(express.static(path.join(__dirname, '../assignment-3-3-basic/dist')));
+// app.use(express.static(path.join(__dirname, '../assignment2-3-318940913_207577875_209384783/dist')));
 app.get("/",function(req,res)
 { 
   //remote: 
-  // res.sendFile(path.join(__dirname, '../assignment-3-3-basic/dist/index.html'));
+  // res.sendFile(path.join(__dirname, '../assignment2-3-318940913_207577875_209384783/index.html'));
   //local:
   res.sendFile(__dirname+"/index.html");
 
@@ -59,7 +59,7 @@ const auth = require("./routes/auth");
 //#region cookie middleware
 app.use(function (req, res, next) {
   if (req.session && req.session.user_id) {
-    DButils.execQuery("SELECT user_id FROM users")
+    DButils.execQuery("SELECT user_id FROM Users")
       .then((users) => {
         if (users.find((x) => x.user_id === req.session.user_id)) {
           req.user_id = req.session.user_id;
@@ -99,3 +99,5 @@ process.on("SIGINT", function () {
   }
   process.exit();
 });
+
+// module.exports = app

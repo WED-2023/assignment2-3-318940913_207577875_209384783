@@ -1,12 +1,35 @@
 const axios = require("axios");
 const api_domain = "https://api.spoonacular.com/recipes";
 
-
-
 /**
  * Get recipes list from spooncular response and extract the relevant recipe data for preview
  * @param {*} recipes_info 
  */
+
+async function getRandomRecipes(number = 3) {
+    const params = {
+        apiKey: process.env.spooncular_apiKey,
+        number: number
+    };
+    const url = `${api_domain}/random`;  
+    const randomRecipes = await axios.get(url, { params }); 
+    // return response.data.recipes;
+    if (randomRecipes.data.recipes.length > 0) {
+        return randomRecipes.data.recipes.map(recipe => ({
+            id: recipe.id,
+            title: recipe.title,
+            readyInMinutes: recipe.readyInMinutes,
+            image: recipe.image,
+            aggregateLikes: recipe.aggregateLikes,
+            vegan: recipe.vegan,
+            vegetarian: recipe.vegetarian,
+            glutenFree: recipe.glutenFree
+          }));
+        }
+    else{
+        throw { status: 500, message: "No random recipes found or issue with Spoonacular API." };
+      }
+}
 
 
 async function getRecipeInformation(recipe_id) {
@@ -54,7 +77,21 @@ async function searchRecipe(recipeName, cuisine, diet, intolerance, number, user
 
 
 
-exports.getRecipeDetails = getRecipeDetails;
+async function getRecipesPreview(recipes_id_array) {
+    // results from search --> getRecipeDetails by id 
+    // we have the array --> recipes_id_array 
+    // for each id we call to getRecipeDetails function(above)
+    // for each information we get for id we make the recipe preview ! 
+    // we will use this function to display preview of recipes in : random , search , last viewed, faviorites , my meal ...  
+}
 
 
 
+module.exports = {
+    getRecipeInformation,
+    searchRecipe,
+    getRandomRecipes,
+    getRecipesPreview,
+    getRecipeDetails
+
+};
