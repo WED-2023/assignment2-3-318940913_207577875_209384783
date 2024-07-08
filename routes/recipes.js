@@ -22,30 +22,6 @@ router.get("/search", async (req, res, next) => {
 });
 
 
-
-router.post("/addNewRecipe", async (req, res, next) => {
-  try
-  {
-    let recipe_details = {
-      user_id: req.session.user_id,
-      title: req.body.title,
-      image: req.body.image,
-      ready_in_minutes: req.body.ready_in_minutes,
-      summary: req.body.summary,
-      servings: req.body.servings,
-      vegan: req.body.vegan,
-      vegetarian: req.body.vegetarian,
-      is_gluten_free: req.body.is_gluten_free,
-      ingredients: req.body.ingredients,
-      instructions: req.body.instructions
-    }
-    recipe_id = await recipes_utils.addNewRecipe(recipe_details);
-    res.status(201).send({ message: "Recipe has been successfully created.", success: true });
-  } catch (error) {
-    next(error);
-  }
-});
-
 router.get("/random", async (req, res, next) => {
   try {
     const number = req.query.number || 3;
@@ -55,6 +31,19 @@ router.get("/random", async (req, res, next) => {
     next(error);
   }
 });
+
+router.get("/recipe/:recipe_id", async (req, res, next) => {
+  try {
+    const recipe_id = req.params.recipe_id;
+    console.log("recipe_id = ",recipe_id);
+    //When I try to get full information i will pass in the body if i should get it from the db or from spooncular
+    const recipe = await recipes_utils.getRecipeFullDetails(recipe_id);
+    res.status(200).send(recipe);
+  } catch (error) {
+    next(error);
+  }
+});
+
 
 
 module.exports = router;
