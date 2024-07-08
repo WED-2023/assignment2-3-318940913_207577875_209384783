@@ -17,6 +17,69 @@ router.post("/Register", async (req, res, next) => {
       password: req.body.password,
       email: req.body.email
     }
+
+    if (
+      !user_details.username ||
+      !user_details.firstname ||
+      !user_details.lastname ||
+      !user_details.country ||
+      !user_details.password ||
+      !user_details.email
+    ) {
+      throw { status: 400, message: "All fields are required." };
+    }
+
+    // Validate username
+    if (!/^[a-zA-Z]{3,8}$/.test(user_details.username)) {
+      throw {
+        status: 400,
+        message: "Username length should be between 3-8 characters long and only contain alphabetic characters.",
+      };
+    }
+
+    // Validate first name
+    if (!/^[a-zA-Z]+$/.test(user_details.firstname)) {
+      throw {
+        status: 400,
+        message: "First name must only contain alphabetic characters.",
+      };
+    }
+
+    // Validate last name
+    if (!/^[a-zA-Z]+$/.test(user_details.lastname)) {
+      throw {
+        status: 400,
+        message: "Last name must only contain alphabetic characters.",
+      };
+    }
+
+    // Validate email
+    if (!/^\S+@\S+\.\S+$/.test(user_details.email)) {
+      throw {
+        status: 400,
+        message: "Email must be valid.",
+      };
+    }
+
+    // Validate country
+    if (!user_details.country) {
+      throw { status: 400, message: "Country is required." };
+    }
+
+    // Validate password
+    if (
+      user_details.password.length < 5 ||
+      user_details.password.length > 10 ||
+      !/\d/.test(user_details.password) ||
+      !/[!@#$%^&*(),.?":{}|<>]/.test(user_details.password)
+    ) {
+      throw {
+        status: 400,
+        message:
+          "Password must be between 5-10 characters long and contain at least one number and one special character.",
+      };
+    }
+
     let users = [];
     users = await DButils.execQuery("SELECT user_name from Users");
 
@@ -40,11 +103,12 @@ router.post("/Register", async (req, res, next) => {
 
 router.post("/Login", async (req, res, next) => {
   try {
+
+    if (!req.body.username || !req.body.password) 
+      throw { status: 400, message: "All fields are required." };
     // check that username exists
     if (req.session.user_id)
-    {
       throw { status: 409, message: "User already logged in" };
-    } 
     const users = await DButils.execQuery("SELECT user_name FROM Users");
     if (!users.find((x) => x.user_name === req.body.username))
       throw { status: 401, message: "Invalid input, username or password is invalid." };
@@ -77,7 +141,7 @@ router.post("/Logout", function (req, res, next) {
     if (req.session.user_id)
     {
       req.session.reset(); // reset the session info --> send cookie when  req.session == undefined!!
-      res.send({ success: true, message: "logout succeeded" });
+      res.send({ success: true, message: "Logout succeeded." });
     } else {
       throw { status: 409, message: "You are not logged in." };
     } 

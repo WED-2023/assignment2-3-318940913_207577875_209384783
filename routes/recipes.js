@@ -19,19 +19,32 @@ router.get("/search", async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-});  
+});
 
-/**
- * This path returns a full details of a recipe by its id
- */
-// router.get("/:recipeId", async (req, res, next) => {
-//   try {
-//     const recipe = await recipes_utils.getRecipeDetails(req.params.recipeId);
-//     res.send(recipe);
-//   } catch (error) {
-//     next(error);
-//   }
-// });
+
+
+router.post("/addNewRecipe", async (req, res, next) => {
+  try
+  {
+    let recipe_details = {
+      user_id: req.session.user_id,
+      title: req.body.title,
+      image: req.body.image,
+      ready_in_minutes: req.body.ready_in_minutes,
+      summary: req.body.summary,
+      servings: req.body.servings,
+      vegan: req.body.vegan,
+      vegetarian: req.body.vegetarian,
+      is_gluten_free: req.body.is_gluten_free,
+      ingredients: req.body.ingredients,
+      instructions: req.body.instructions
+    }
+    recipe_id = await recipes_utils.addNewRecipe(recipe_details);
+    res.status(201).send({ message: "Recipe has been successfully created.", success: true });
+  } catch (error) {
+    next(error);
+  }
+});
 
 router.get("/random", async (req, res, next) => {
   try {
@@ -42,5 +55,6 @@ router.get("/random", async (req, res, next) => {
     next(error);
   }
 });
+
 
 module.exports = router;

@@ -13,7 +13,10 @@ const pool = new mysql.createPool(config);
 const connection =  () => {
   return new Promise((resolve, reject) => {
   pool.getConnection((err, connection) => {
-    if (err) reject(err);
+    if (err) {
+      console.error('Error getting MySQL connection:', err.code, err.message);
+      return reject(err);
+    }
     console.log("MySQL pool connected: threadId " + connection.threadId);
     const query = (sql, binding) => {
       return new Promise((resolve, reject) => {
