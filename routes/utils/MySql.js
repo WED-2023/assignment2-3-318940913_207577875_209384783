@@ -1,20 +1,24 @@
-var mysql = require('mysql');
+var mysql = require('mysql2');
 require("dotenv").config();
 
 
-const config={
-connectionLimit:4,
-  host: process.env.host,//"localhost"
-  user: process.env.user,//"root"
-  password: "pass_root@123",
-  database:"mydb"
-}
+const config = {
+  connectionLimit: 4,
+  host: process.env.DB_HOST || "127.0.0.1",  // Use environment variable or fallback to local
+  user: process.env.DB_USER || "root",  // Use environment variable or fallback to root
+  password: process.env.DB_PASSWORD || "1998iGuYBi1998",  // Use environment variable or fallback to default password
+  database: process.env.DB_NAME || "rachel_recipes"  // Use environment variable or fallback to default database name
+};
+
 const pool = new mysql.createPool(config);
 
 const connection =  () => {
   return new Promise((resolve, reject) => {
   pool.getConnection((err, connection) => {
-    if (err) reject(err);
+    if (err) {
+      console.error('Error getting MySQL connection:', err.code, err.message);
+      return reject(err);
+    }
     console.log("MySQL pool connected: threadId " + connection.threadId);
     const query = (sql, binding) => {
       return new Promise((resolve, reject) => {
