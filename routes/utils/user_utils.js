@@ -12,10 +12,7 @@ async function markAsFavorite(user_id, recipe_id){
         const RecipeType = "MyRecipes";
         await DButils.execQuery(`insert into UserFavorites (userId, recipeId, recipeSource) values ('${user_id}',${recipe_id},'${RecipeType}')`);
     }
-
-
 }
-
 
 async function removeFavorite(user_id, recipe_id) {
     await DButils.execQuery(`DELETE FROM UserFavorites WHERE userId='${user_id}' AND (recipeId=${recipe_id} OR externalRecipeId=${recipe_id})`);
@@ -33,7 +30,6 @@ async function getFavoriteRecipes(user_id) {
             return recipe.externalRecipeId;
         }
     });
-
     return recipes_id;
 }
 
@@ -162,6 +158,12 @@ async function addNewRecipe(recipe_details)
         );
     }
 }
+async function getMyRecipes(user_id) {
+    const myRecipes = await DButils.execQuery(`SELECT * FROM MyRecipes WHERE user_id = '${user_id}'`);
+    const myRecipes_id = myRecipes.map(recipe => {return recipe.recipe_id;});
+    return myRecipes_id;
+}
+
 
 
 
@@ -174,3 +176,4 @@ exports.getLastViewedRecipes =getLastViewedRecipes;
 exports.removeFavorite = removeFavorite;
 exports.newRecipeValidations = newRecipeValidations;
 exports.addNewRecipe = addNewRecipe;
+exports.getMyRecipes = getMyRecipes;

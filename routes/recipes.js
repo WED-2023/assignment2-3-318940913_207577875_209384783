@@ -20,7 +20,7 @@ router.get("/search", async (req, res, next) => {
     next(error);
   }
 });
-
+// fetchRandomRecipesFromServer
 
 router.get("/random", async (req, res, next) => {
   try {

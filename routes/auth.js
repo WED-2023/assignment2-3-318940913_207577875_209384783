@@ -17,7 +17,7 @@ router.post("/Register", async (req, res, next) => {
       password: req.body.password,
       email: req.body.email
     }
-
+    console.log(user_details);
     if (
       !user_details.username ||
       !user_details.firstname ||
@@ -148,8 +148,6 @@ router.post("/Logout", function (req, res, next) {
   } catch (error) {
     next(error);
   }
-
-
 });
 
 module.exports = router;

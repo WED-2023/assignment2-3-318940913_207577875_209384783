@@ -33,33 +33,38 @@ async function getRandomRecipes(number = 3) {
 }
 
 
-async function getRecipeInformation(recipe_id, FromDB = false) {
-    if(FromDB)
+async function getRecipeInformation(recipe_id, is_search = false) {
+    const checkIfFromDB = await DButils.execQuery(`SELECT 1 FROM MyRecipes WHERE recipe_id = '${recipe_id}'`);
+    
+    if (checkIfFromDB.length > 0 && !is_search)
     {
         const recipeInformataion = (
             await DButils.execQuery(
               `SELECT * FROM myrecipes WHERE recipe_id = '${recipe_id}'`
             )
           )[0];
-          return recipeInformataion;
+          return  { recipeInformataion: recipeInformataion, fromDB: true };
     }
     else
     {
-        return await axios.get(`${api_domain}/${recipe_id}/information`, {
+        const recipeInformataion =  await axios.get(`${api_domain}/${recipe_id}/information`, {
             params: {
                 includeNutrition: false,
                 apiKey: process.env.spooncular_apiKey
             }
         });
+        return  { recipeInformataion: recipeInformataion, fromDB: false };
     }
 
 }
 
-async function getRecipeDetails(recipe_id, fromDB = false) {
-    let recipe_info = await getRecipeInformation(recipe_id, fromDB);
-    if(fromDB)
+async function getRecipeDetails(recipe_id, is_search = false) {
+    let recipe_info = await getRecipeInformation(recipe_id);
+    const recipeInformataion = recipe_info.recipeInformataion;
+    const fromDB = recipe_info.fromDB;
+    if(fromDB && !is_search)
     {        
-        let { recipe_id, title, ready_in_minutes, image, vegan, vegetarian, is_gluten_free } = recipe_info;
+        let { recipe_id, title, ready_in_minutes, image, vegan, vegetarian, is_gluten_free } = recipeInformataion;
         return {
             id: recipe_id,
             title: title,
@@ -73,7 +78,7 @@ async function getRecipeDetails(recipe_id, fromDB = false) {
     }    
     else
     {
-        let { id, title, readyInMinutes, image, aggregateLikes, vegan, vegetarian, glutenFree } = recipe_info.data;
+        let { id, title, readyInMinutes, image, aggregateLikes, vegan, vegetarian, glutenFree } = recipeInformataion.data;
         return {
             id: id,
             title: title,
@@ -190,14 +195,14 @@ async function searchRecipe(recipeName, cuisine, diet, intolerance, number) {
         }
     });
 
-    return getRecipesPreview(response.data.results.map((element) => element.id));
+    return getRecipesPreview(response.data.results.map((element) => element.id), true);
 }
 
 
-async function getRecipesPreview(recipes_id_array) {
+async function getRecipesPreview(recipes_id_array, is_search = false) {
   const recipesDetailsArray = [];
   const recipeDetailsPromises = recipes_id_array.map(async (recipe_id) => {
-      const recipeDetails = await getRecipeDetails(recipe_id);
+      const recipeDetails = await getRecipeDetails(recipe_id, is_search);
       return recipeDetails;
   });
 
@@ -213,6 +218,3 @@ exports.getRecipeFullDetails = getRecipeFullDetails;
 exports.getRandomRecipes = getRandomRecipes;
 exports.searchRecipe = searchRecipe;
 exports.getRecipesPreview =getRecipesPreview;
-
-
-

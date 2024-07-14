@@ -117,7 +117,21 @@ router.post("/addNewRecipe", async (req, res, next) => {
     recipe_id = await user_utils.addNewRecipe(recipe_details);
     res.status(201).send({ message: "Recipe has been successfully created.", success: true });
   } catch (error) {
+    
     next(error);
+  }
+});
+
+router.get('/MyRecipes', async (req,res,next) => {
+  try{
+    if (!req.session.user_id) {throw { status: 401, message: "No User Logged in."};}
+    const user_id = req.session.user_id;
+    const myRecipes_id = await user_utils.getMyRecipes(user_id);
+    if(myRecipes_id.length == 0){throw { status: 203, message: "This user has no Recipes ." };}
+    const results = await recipe_utils.getRecipesPreview(myRecipes_id);
+    res.status(200).send(results);
+  } catch(error){
+    next(error); 
   }
 });
 
