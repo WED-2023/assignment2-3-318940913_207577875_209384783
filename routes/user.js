@@ -100,8 +100,7 @@ router.get("/FavoritesRecipes", async (req, res, next) => {
     if (recipes_id.length == 0) {
       throw { status: 203, message: "This user has no favorite Recipes ." };
     }
-    const results = await recipe_utils.getRecipesPreview(recipes_id);
-    res.status(200).send(results);
+    res.status(200).send(recipes_id);
   } catch (error) {
     next(error);
   }
@@ -206,7 +205,7 @@ router.get("/RecipeMaking", async (req, res, next) => {
       throw { status: 401, message: "No User Logged in." };
     }
     const user_id = req.session.user_id;
-    const recipe_id = req.body.recipeId;
+    const recipe_id = req.params.recipeId;
     // Checks is recipe_id is located in my meal, if not it will throw an error
     const recipe_info = await user_utils.getMyMealRecipes(user_id, recipe_id);
     const recipePreviews = await recipe_utils.getRecipesPreview([recipe_id]);
@@ -238,21 +237,24 @@ router.put("/RecipeMaking", async (req, res, next) => {
       .status(200)
       .send("You have successfully update the recipe making progress.");
   } catch (error) {
-    
     next(error);
   }
 });
 
-router.get('/MyRecipes', async (req,res,next) => {
-  try{
-    if (!req.session.user_id) {throw { status: 401, message: "No User Logged in."};}
+router.get("/MyRecipes", async (req, res, next) => {
+  try {
+    if (!req.session.user_id) {
+      throw { status: 401, message: "No User Logged in." };
+    }
     const user_id = req.session.user_id;
     const myRecipes_id = await user_utils.getMyRecipes(user_id);
-    if(myRecipes_id.length == 0){throw { status: 203, message: "This user has no Recipes ." };}
+    if (myRecipes_id.length == 0) {
+      throw { status: 203, message: "This user has no Recipes ." };
+    }
     const results = await recipe_utils.getRecipesPreview(myRecipes_id);
     res.status(200).send(results);
-  } catch(error){
-    next(error); 
+  } catch (error) {
+    next(error);
   }
 });
 

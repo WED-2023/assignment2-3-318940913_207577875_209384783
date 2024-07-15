@@ -19,7 +19,7 @@ async function markAsFavorite(user_id, recipe_id) {
 
 async function removeFavorite(user_id, recipe_id) {
   await DButils.execQuery(
-    `DELETE FROM UserFavorites WHERE userId='${user_id}' AND (recipeId=${recipe_id} OR externalRecipeId=${recipe_id})`
+    `DELETE FROM UserFavorites WHERE userId='${user_id}' AND (recipeId='${recipe_id}' OR externalRecipeId='${recipe_id}')`
   );
 }
 
@@ -245,8 +245,6 @@ async function getMyRecipes(user_id) {
 }
 
 
-
-
 exports.markAsFavorite = markAsFavorite;
 exports.getFavoriteRecipes = getFavoriteRecipes;
 exports.updateLastViewed = updateLastViewed;
@@ -260,3 +258,4 @@ exports.getMyMealRecipes = getMyMealRecipes;
 exports.fetchRecipeProgress = fetchRecipeProgress;
 exports.updateRecipeProgressInMyMeal = updateRecipeProgressInMyMeal;
 exports.getAllLastViewedRecipes = getAllLastViewedRecipes;
+exports.getMyRecipes = getMyRecipes;

@@ -49,4 +49,14 @@ router.get("/recipe/:recipe_id", async (req, res, next) => {
   }
 });
 
+router.post("/RecipesPreview", async (req, res, next) => {
+  try {
+    const recipes_id = req.body.recipes_id;
+    const results = await recipes_utils.getRecipesPreview(recipes_id);
+    res.status(200).send(results);
+  } catch (error) {
+    next(error);
+  }
+});
+
 module.exports = router;
