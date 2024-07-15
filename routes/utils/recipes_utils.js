@@ -156,6 +156,7 @@ async function getRecipeFullDetails(recipe_id) {
       glutenFree,
       instructions,
       extendedIngredients,
+      servings,
     } = recipe.data;
     return {
       id: id,
@@ -168,6 +169,7 @@ async function getRecipeFullDetails(recipe_id) {
       glutenFree: glutenFree,
       instructions: instructions,
       extendedIngredients: extendedIngredients,
+      servings: servings,
     };
   } else {
     let recipe = await getRecipeFullInformation(recipe_id, true);
@@ -179,6 +181,7 @@ async function getRecipeFullDetails(recipe_id) {
       vegan,
       vegetarian,
       is_gluten_free,
+      servings,
     } = recipe.recipe_informataion;
     let ingredients = [];
     for (const ingredient of recipe.recipe_ingredients) {
@@ -201,6 +204,7 @@ async function getRecipeFullDetails(recipe_id) {
       glutenFree: Boolean(is_gluten_free),
       instructions: instructions,
       extendedIngredients: ingredients,
+      servings: servings,
     };
   }
 }
