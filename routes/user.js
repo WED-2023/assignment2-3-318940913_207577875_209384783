@@ -46,8 +46,6 @@ router.get("/LastViewedRecipes", async (req, res, next) => {
     if (!req.session.user_id) {throw { status: 401, message: "No User Logged in." };}
     const user_id = req.session.user_id;
     const recipes_id = await user_utils.getLastViewedRecipes(user_id);
-    // let recipes_id_array = [];
-    // recipes_id.map((element) => recipes_id_array.push(element.recipe_id)); 
     const results = await recipe_utils.getRecipesPreview(recipes_id);
     res.status(200).send(results);
   } catch (error) {
@@ -135,6 +133,7 @@ router.post("/addNewRecipe", async (req, res, next) => {
       ingredients: req.body.ingredients,
       instructions: req.body.instructions,
     };
+    console.log("recipe_details.instructions = ", recipe_details.instructions);
     recipe_id = await user_utils.addNewRecipe(recipe_details);
     res.status(201).send({
       message: "Recipe has been successfully created.",
