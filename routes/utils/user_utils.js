@@ -102,9 +102,7 @@ async function updateRecipeProgressInMyMeal(
   recipe_progress
 ) {
   // Check if the recipe exists in UserMeal
-  const checkIfInUserMeal = await DButils.execQuery(
-    `SELECT * FROM UserMeal WHERE userId='${user_id}' AND (recipeId=${recipe_id} OR externalRecipeId=${recipe_id})`
-  );
+  const checkIfInUserMeal = await DButils.execQuery(`SELECT * FROM UserMeal WHERE userId='${user_id}' AND (recipeId=${recipe_id} OR externalRecipeId=${recipe_id})`);
 
   if (checkIfInUserMeal.length == 0)
     throw { status: 401, message: "Recipe ID is not in user meal." };
@@ -120,54 +118,20 @@ async function removeFromMyMeal(user_id, recipe_id) {
   );
 }
 
+// ====================== Last View ==============================================================================
 /**
- * Checks if the user has more than the maximum allowed records (3) in the LastViewedRecipes table.
- * If the user has 3 or more records, it deletes the oldest record.
  *
  * @param {number} user_id - The ID of the user.
+ * @param {number} recipe_id - The ID of the recipe.
  */
-async function checkAndDeleteOldest(user_id) {
-  const maxRecords = 3;
-  const countQuery = `SELECT COUNT(*) AS count FROM LastViewedRecipes WHERE user_id = ?`;
-  const countResult = await DButils.execQuery(countQuery, [user_id]);
-  const recordCount = countResult[0].count;
-
-  if (recordCount >= maxRecords) {
-    const oldestRecipeQuery = `
-            SELECT recipe_id 
-            FROM LastViewedRecipes 
-            WHERE user_id = ? 
-            ORDER BY viewed_at ASC 
-            LIMIT 1
-        `;
-    const oldestRecipeResult = await execQuery(oldestRecipeQuery, [user_id]);
-    const oldestRecipeId = oldestRecipeResult[0].recipe_id;
-    const deleteQuery = `DELETE FROM LastViewedRecipes WHERE user_id = ? AND recipe_id = ?`;
-    await DButils.execQuery(deleteQuery, [user_id, oldestRecipeId]);
+async function updateLastViewed(user_id, recipe_id) {
+  const existingRecipeResult = await DButils.execQuery(`SELECT recipe_id FROM LastViewedRecipes WHERE user_id = '${user_id}' AND recipe_id = '${recipe_id}'`);
+  if (existingRecipeResult.length > 0) {
+    await DButils.execQuery(`UPDATE LastViewedRecipes SET viewed_at = NOW() WHERE user_id = '${user_id}' AND recipe_id = '${recipe_id}'`);
   }
-}
-
-/**
- * Inserts a new record into the LastViewedRecipes table.
- *
- * @param {number} user_id - The ID of the user.
- * @param {number} recipe_id - The ID of the recipe.
- */
-async function insertViewedRecipe(user_id, recipe_id) {
-  const insertQuery = `INSERT INTO LastViewedRecipes (user_id, recipe_id) VALUES (?, ?)`;
-  await DButils.execQuery(insertQuery, [user_id, recipe_id]);
-}
-
-/**
- * Marks a recipe as viewed by a user. If the user has more than the maximum allowed records,
- * it deletes the oldest record and then inserts the new record.
- *
- * @param {number} user_id - The ID of the user.
- * @param {number} recipe_id - The ID of the recipe.
- */
-async function markAsViewed(user_id, recipe_id) {
-  await checkAndDeleteOldest(user_id);
-  await insertViewedRecipe(user_id, recipe_id);
+  else{
+    await DButils.execQuery(`INSERT INTO LastViewedRecipes (user_id, recipe_id, viewed_at) VALUES ('${user_id}', '${recipe_id}', NOW())`);
+  }
 }
 
 /**
@@ -177,11 +141,14 @@ async function markAsViewed(user_id, recipe_id) {
  * @returns {Promise<Array>} - A promise that resolves to an array of recipe IDs.
  */
 async function getLastViewedRecipes(user_id) {
-  const recipes_id = await DButils.execQuery(
-    `select recipe_id from LastViewedRecipes where user_id='${user_id}'`
-  );
-  return recipes_id;
+  const recipes_id = await DButils.execQuery(`SELECT recipe_id FROM LastViewedRecipes WHERE user_id='${user_id}' ORDER BY viewed_at DESC LIMIT 3`);
+  return recipes_id.map(row => row.recipe_id);
 }
+async function getAllLastViewedRecipes(user_id) {
+  const recipes_id = await DButils.execQuery(`SELECT recipe_id FROM LastViewedRecipes WHERE user_id='${user_id}'`);
+  return recipes_id.map(row => row.recipe_id);
+}
+// ====================================================================================================
 
 function newRecipeValidations(recipe_details) {
   if (!recipe_details.user_id)
@@ -282,9 +249,7 @@ async function getMyRecipes(user_id) {
 
 exports.markAsFavorite = markAsFavorite;
 exports.getFavoriteRecipes = getFavoriteRecipes;
-exports.checkAndDeleteOldest = checkAndDeleteOldest;
-exports.insertViewedRecipe = insertViewedRecipe;
-exports.markAsViewed = markAsViewed;
+exports.updateLastViewed = updateLastViewed;
 exports.getLastViewedRecipes = getLastViewedRecipes;
 exports.removeFavorite = removeFavorite;
 exports.newRecipeValidations = newRecipeValidations;
@@ -294,3 +259,4 @@ exports.addToMyMeal = addToMyMeal;
 exports.getMyMealRecipes = getMyMealRecipes;
 exports.fetchRecipeProgress = fetchRecipeProgress;
 exports.updateRecipeProgressInMyMeal = updateRecipeProgressInMyMeal;
+exports.getAllLastViewedRecipes = getAllLastViewedRecipes;

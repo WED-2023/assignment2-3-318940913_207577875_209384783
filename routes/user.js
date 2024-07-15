@@ -22,17 +22,17 @@ router.use(async function (req, res, next) {
   }
 });
 
+// ====================== Last View ==============================================================================
+
 /**
  * This path gets body with recipeId and save this recipe in the lastviewed list of the logged-in user
  */
 router.post("/LastViewedRecipes", async (req, res, next) => {
   try {
-    if (!req.session.user_id) {
-      throw { status: 401, message: "No User Logged in." };
-    }
+    if (!req.session.user_id) {throw { status: 401, message: "No User Logged in." };}
     const user_id = req.session.user_id;
     const recipe_id = req.body.recipeId;
-    await user_utils.markAsViewed(user_id, recipe_id);
+    await user_utils.updateLastViewed(user_id, recipe_id);
     res.status(200).send("The Recipe successfully saved as LastViwed");
   } catch (error) {
     next(error);
@@ -43,19 +43,32 @@ router.post("/LastViewedRecipes", async (req, res, next) => {
  */
 router.get("/LastViewedRecipes", async (req, res, next) => {
   try {
-    if (!req.session.user_id) {
-      throw { status: 401, message: "No User Logged in." };
-    }
+    if (!req.session.user_id) {throw { status: 401, message: "No User Logged in." };}
     const user_id = req.session.user_id;
     const recipes_id = await user_utils.getLastViewedRecipes(user_id);
-    let recipes_id_array = [];
-    recipes_id.map((element) => recipes_id_array.push(element.recipe_id)); //extracting the recipe ids into array
-    const results = await recipe_utils.getRecipesPreview(recipes_id_array);
+    // let recipes_id_array = [];
+    // recipes_id.map((element) => recipes_id_array.push(element.recipe_id)); 
+    const results = await recipe_utils.getRecipesPreview(recipes_id);
     res.status(200).send(results);
   } catch (error) {
     next(error);
   }
 });
+router.get("/IsLastViewedRecipe", async (req, res, next) => {
+  try {
+    if (!req.session.user_id) {throw { status: 401, message: "No User Logged in." };}
+    const user_id = req.session.user_id;
+    const recipe_id = req.query.recipeId;
+    const recipes_id = await user_utils.getAllLastViewedRecipes(user_id);
+    const isLastViewed = recipes_id.some(id => String(id) === recipe_id);
+
+    res.status(200).send({ isLastViewed });
+  } catch (error) {
+    next(error);
+  }
+});
+// ====================================================================================================
+
 
 /**
  * This path gets body with recipeId and save this recipe in the favorites list of the logged-in user

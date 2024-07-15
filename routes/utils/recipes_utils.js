@@ -2,6 +2,8 @@ const axios = require("axios");
 const DButils = require("../utils/DButils");
 const api_domain = "https://api.spoonacular.com/recipes";
 
+// ====================== Rando Recipes  ==============================================================================
+
 /**
  * Get recipes list from spooncular response and extract the relevant recipe data for preview
  * @param {*} recipes_info
@@ -33,7 +35,7 @@ async function getRandomRecipes(number = 3) {
     };
   }
 }
-
+//====================================================================================================
 async function getRecipeInformation(recipe_id, is_search = false) {
   const checkIfFromDB = await DButils.execQuery(
     `SELECT 1 FROM MyRecipes WHERE recipe_id = '${recipe_id}'`
@@ -156,6 +158,7 @@ async function getRecipeFullDetails(recipe_id) {
       glutenFree,
       instructions,
       extendedIngredients,
+      servings,
     } = recipe.data;
     return {
       id: id,
@@ -168,6 +171,7 @@ async function getRecipeFullDetails(recipe_id) {
       glutenFree: glutenFree,
       instructions: instructions,
       extendedIngredients: extendedIngredients,
+      servings: servings,
     };
   } else {
     let recipe = await getRecipeFullInformation(recipe_id, true);
@@ -179,6 +183,7 @@ async function getRecipeFullDetails(recipe_id) {
       vegan,
       vegetarian,
       is_gluten_free,
+      servings,
     } = recipe.recipe_informataion;
     let ingredients = [];
     for (const ingredient of recipe.recipe_ingredients) {
@@ -201,26 +206,25 @@ async function getRecipeFullDetails(recipe_id) {
       glutenFree: Boolean(is_gluten_free),
       instructions: instructions,
       extendedIngredients: ingredients,
+      servings: servings,
     };
   }
 }
 
-async function searchRecipe(recipeName, cuisine, diet, intolerance, number) {
+async function searchRecipe(recipeName, cuisines, diets, intolerances, number,sort) {
   const response = await axios.get(`${api_domain}/complexSearch`, {
     params: {
       query: recipeName,
-      cuisine: cuisine,
-      diet: diet,
-      intolerances: intolerance,
+      cuisine: cuisines,
+      diet: diets,
+      intolerances: intolerances,
       number: number,
+      sort: sort,
       apiKey: process.env.spooncular_apiKey,
     },
   });
-
-  return getRecipesPreview(
-    response.data.results.map((element) => element.id),
-    true
-  );
+  let recipeIds = response.data.results.map(recipe => recipe.id);
+  return await getRecipesPreview(recipeIds,true);
 }
 
 async function getRecipesPreview(recipes_id_array, is_search = false) {
