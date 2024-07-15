@@ -233,7 +233,7 @@ async function addNewRecipe(recipe_details) {
   for (const instruction of recipe_details.instructions) {
     await DButils.execQuery(
       `INSERT INTO instructions (recipe_id, instruction_order, instruction_text) VALUES ('${newRecipeId}', '${order++}', '${
-        instruction.instruction_text
+        instruction.name
       }')`
     );
   }
