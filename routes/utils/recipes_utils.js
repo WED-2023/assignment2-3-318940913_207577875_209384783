@@ -187,7 +187,11 @@ async function getRecipeFullDetails(recipe_id) {
     } = recipe.recipe_informataion;
     let ingredients = [];
     for (const ingredient of recipe.recipe_ingredients) {
+      console.log("ingredient = ",ingredient);
       let { name, quantity, unit } = ingredient;
+      console.log("name = ",name);
+      console.log("quantity = ",quantity);
+      console.log("unit = ",unit);
       ingredients.push({ originalName: name, amount: quantity, unit: unit });
     }
     let instructions = [];
