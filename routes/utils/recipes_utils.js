@@ -145,6 +145,7 @@ async function getRecipeFullDetails(recipe_id) {
   const checkIfFromDB = await DButils.execQuery(
     `SELECT 1 FROM MyRecipes WHERE recipe_id = '${recipe_id}'`
   );
+  // If its not frrom DB
   if (checkIfFromDB.length == 0) {
     let recipe = await getRecipeFullInformation(recipe_id);
     let {
@@ -156,7 +157,7 @@ async function getRecipeFullDetails(recipe_id) {
       vegan,
       vegetarian,
       glutenFree,
-      instructions,
+      analyzedInstructions,
       extendedIngredients,
       servings,
     } = recipe.data;
@@ -169,7 +170,7 @@ async function getRecipeFullDetails(recipe_id) {
       vegan: vegan,
       vegetarian: vegetarian,
       glutenFree: glutenFree,
-      instructions: instructions,
+      instructions: analyzedInstructions[0].steps.map(step => step.step),
       extendedIngredients: extendedIngredients,
       servings: servings,
     };
@@ -211,7 +212,14 @@ async function getRecipeFullDetails(recipe_id) {
   }
 }
 
-async function searchRecipe(recipeName, cuisines, diets, intolerances, number,sort) {
+async function searchRecipe(
+  recipeName,
+  cuisines,
+  diets,
+  intolerances,
+  number,
+  sort
+) {
   const response = await axios.get(`${api_domain}/complexSearch`, {
     params: {
       query: recipeName,
@@ -223,8 +231,8 @@ async function searchRecipe(recipeName, cuisines, diets, intolerances, number,so
       apiKey: process.env.spooncular_apiKey,
     },
   });
-  let recipeIds = response.data.results.map(recipe => recipe.id);
-  return await getRecipesPreview(recipeIds,true);
+  let recipeIds = response.data.results.map((recipe) => recipe.id);
+  return await getRecipesPreview(recipeIds, true);
 }
 
 async function getRecipesPreview(recipes_id_array, is_search = false) {
