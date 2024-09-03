@@ -41,6 +41,7 @@ async function getFavoriteRecipes(user_id) {
 }
 
 async function getMyMealRecipes(user_id, recipe_id = null) {
+  console.log("user_utils.js: recipe_id = ", recipe_id);
   const recipes = recipe_id
     ? await DButils.execQuery(
         `SELECT recipeId, externalRecipeId, recipeSource, recipeProgress FROM UserMeal WHERE userId='${user_id}' AND (recipeId=${recipe_id} OR externalRecipeId=${recipe_id})`
@@ -48,9 +49,14 @@ async function getMyMealRecipes(user_id, recipe_id = null) {
     : await DButils.execQuery(
         `SELECT recipeId, externalRecipeId, recipeSource, recipeProgress FROM UserMeal WHERE userId='${user_id}'`
       );
+  console.log("user_utils.js: before if (recipes.length == 0)");
   // Process the results to return the correct ID based on the source
   if (recipes.length == 0)
+  {
+    console.log("user_utils.js: inside if (recipes.length == 0)");
     throw { status: 401, message: "Recipe ID is not in user meal." };
+  }
+  console.log("user_utils.js: after if (recipes.length == 0)");
   const recipes_info = recipes.map((recipe) => {
     if (recipe.recipeSource === "MyRecipes") {
       return {
@@ -64,7 +70,9 @@ async function getMyMealRecipes(user_id, recipe_id = null) {
       };
     }
   });
+  console.log("user_utils.js: recipes_info", recipes_info);
   return recipes_info;
+  /// good till here
 }
 
 async function fetchRecipeProgress(recipes_info, recipePreviews) {
@@ -80,21 +88,31 @@ async function fetchRecipeProgress(recipes_info, recipePreviews) {
 }
 
 async function addToMyMeal(user_id, recipe_id) {
+  console.log("user_utils - 1");
+  const checkIfInUserMeal = await DButils.execQuery(`SELECT * FROM UserMeal WHERE userId='${user_id}' AND (recipeId='${recipe_id}' OR externalRecipeId='${recipe_id}')`);
+
+  if (checkIfInUserMeal.length != 0)
+    throw { status: 401, message: "Recipe is already in user meal." };
   const checkIfFromDB = await DButils.execQuery(
     `SELECT 1 FROM MyRecipes WHERE recipe_id = ${recipe_id}`
   );
+  console.log("user_utils - 2");
   if (checkIfFromDB.length == 0) {
     const RecipeType = "Spoonacular";
     await DButils.execQuery(
       `insert into UserMeal (userId, externalRecipeId, recipeSource) values ('${user_id}',${recipe_id},'${RecipeType}')`
     );
+    console.log("user_utils - 3");
   } else {
+    console.log("user_utils - 4");
     const RecipeType = "MyRecipes";
     await DButils.execQuery(
       `insert into UserMeal (userId, recipeId, recipeSource) values ('${user_id}',${recipe_id},'${RecipeType}')`
     );
+    console.log("user_utils - 5");
   }
 }
+
 
 async function updateRecipeProgressInMyMeal(
   user_id,

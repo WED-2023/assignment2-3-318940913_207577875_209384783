@@ -172,13 +172,19 @@ router.get("/MyMeal", async (req, res, next) => {
 
 router.post("/MyMeal", async (req, res, next) => {
   try {
+    console.log("1");
     if (!req.session.user_id) {
       throw { status: 401, message: "No User Logged in." };
     }
+    console.log("2");
     const user_id = req.session.user_id;
     const recipe_id = req.body.recipeId;
+    console.log("3");
+    console.log("user id = ", user_id, " recipe_id= ", recipe_id);
     await user_utils.addToMyMeal(user_id, recipe_id);
+    console.log("4");
     res.status(200).send("The Recipe successfully add to user meal.");
+    console.log("5");
   } catch (error) {
     next(error);
   }
@@ -198,6 +204,24 @@ router.delete("/MyMeal", async (req, res, next) => {
   }
 });
 
+router.get("/RecipeMakingProgress/:recipeId", async (req, res, next) => {
+  try {
+    if (!req.session.user_id) {
+      throw { status: 401, message: "No User Logged in." };
+    }
+    const user_id = req.session.user_id;
+    const recipe_id = req.params.recipeId;
+    console.log("user.js: recipe_id = ", recipe_id);
+    // Checks is recipe_id is located in my meal, if not it will throw an error
+
+    // if there is recipe_id return only the progress for the specific recipe_id, else return list: recipes_info [ { recipe_id: '639054', recipe_progress: null }, { recipe_id: '645732', recipe_progress: null } ]
+    const recipe_info = await user_utils.getMyMealRecipes(user_id, recipe_id);
+    res.status(200).send(recipe_info[0]);
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get("/RecipeMaking", async (req, res, next) => {
   try {
     if (!req.session.user_id) {
@@ -205,8 +229,13 @@ router.get("/RecipeMaking", async (req, res, next) => {
     }
     const user_id = req.session.user_id;
     const recipe_id = req.params.recipeId;
+    console.log("user.js: recipe_id = ", recipe_id);
     // Checks is recipe_id is located in my meal, if not it will throw an error
+
+    // if there is recipe_id return only the progress for the specific recipe_id, else return list: recipes_info [ { recipe_id: '639054', recipe_progress: null }, { recipe_id: '645732', recipe_progress: null } ]
     const recipe_info = await user_utils.getMyMealRecipes(user_id, recipe_id);
+
+
     const recipePreviews = await recipe_utils.getRecipesPreview([recipe_id]);
     // Merge recipe progress into the recipe previews
     const results = await user_utils.fetchRecipeProgress(
@@ -224,6 +253,7 @@ router.put("/RecipeMaking", async (req, res, next) => {
     if (!req.session.user_id) {
       throw { status: 401, message: "No User Logged in." };
     }
+    console.log("user_id = ", req.session.user_id, " recipe_id = ", req.body.recipeId, " recipe_progress = ", req.body.recipe_progress);
     const user_id = req.session.user_id;
     const recipe_id = req.body.recipeId;
     const recipe_progress = "[" + req.body.recipe_progress.toString() + "]";
