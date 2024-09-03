@@ -141,7 +141,7 @@ async function updateLastViewed(user_id, recipe_id) {
  * @returns {Promise<Array>} - A promise that resolves to an array of recipe IDs.
  */
 async function getLastViewedRecipes(user_id) {
-  const recipes_id = await DButils.execQuery(`SELECT recipe_id FROM LastViewedRecipes WHERE user_id='${user_id}' ORDER BY viewed_at DESC LIMIT 3`);
+  const recipes_id = await DButils.execQuery(`SELECT recipe_id FROM LastViewedRecipes WHERE user_id='${user_id}' ORDER BY viewed_at DESC LIMIT 4`);
   return recipes_id.map(row => row.recipe_id);
 }
 async function getAllLastViewedRecipes(user_id) {
