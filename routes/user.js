@@ -123,7 +123,7 @@ router.post("/addNewRecipe", async (req, res, next) => {
     let recipe_details = {
       user_id: req.session.user_id,
       title: req.body.title,
-      image: req.body.imageUrl,
+      image: req.body.image,
       ready_in_minutes: req.body.ready_in_minutes,
       summary: req.body.summary,
       servings: req.body.servings,
