@@ -205,7 +205,7 @@ async function getRecipeFullDetails(recipe_id) {
       vegan: vegan,
       vegetarian: vegetarian,
       glutenFree: glutenFree,
-      instructions: analyzedInstructions[0].steps.map(step => step.step),
+      instructions: analyzedInstructions[0].steps.map((step) => step.step),
       extendedIngredients: extendedIngredients,
       servings: servings,
     };

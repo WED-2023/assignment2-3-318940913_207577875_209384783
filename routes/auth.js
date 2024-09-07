@@ -6,8 +6,8 @@ const bcrypt = require("bcrypt");
 
 /**
  * Register a new user.
- * 
- * This route registers a new user by checking for valid input parameters, validating the username, 
+ *
+ * This route registers a new user by checking for valid input parameters, validating the username,
  * first name, last name, email, country, and password, and ensuring the username does not already exist.
  * If all checks pass, the new user is added to the database.
  */
@@ -115,7 +115,7 @@ router.post("/Register", async (req, res, next) => {
 
 /**
  * Log in an existing user.
- * 
+ *
  * This route logs in an existing user by checking if the username and password match the stored credentials.
  * It also checks if the user is already logged in.
  */
@@ -161,7 +161,7 @@ router.post("/Login", async (req, res, next) => {
 
 /**
  * Log out the current user.
- * 
+ *
  * This route logs out the current user by resetting the session information.
  */
 router.post("/Logout", function (req, res, next) {
