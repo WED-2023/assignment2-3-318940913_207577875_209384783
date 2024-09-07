@@ -163,4 +163,10 @@ COOKIE_SECRET=your_cookie_secret
 
 <h2>Contact</h2>
 
-<p>For questions or suggestions, please contact <a href="mailto:guybito@post.bgu.ac.il">guybito@post.bgu.ac.il</a>.</p>
+<p>For questions or suggestions, please contact:</p>
+
+<ul>
+  <li><a href="mailto:guybito@post.bgu.ac.il">Guy Biton - guybito@post.bgu.ac.il</a></li>
+  <li><a href="mailto:danvai@post.bgu.ac.il">Daniel Vainshtein - danvai@post.bgu.ac.il</a></li>
+  <li><a href="mailto:schyuval@post.bgu.ac.il">Yuval Schy - schyuval@post.bgu.ac.il</a></li>
+</ul>
