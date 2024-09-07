@@ -183,8 +183,8 @@
 <p>To run this backend API locally:</p>
 
 <h3>1. Clone the Repository</h3>
-<pre><code>git clone https://github.com/your-repo/backend-api.git
-cd backend-api
+<pre><code>git clone https://github.com/WED-2023/assignment2-3-318940913_207577875_209384783.git
+cd assignment2-3-318940913_207577875_209384783
 </code></pre>
 
 <h3>2. Install Backend Dependencies</h3>
@@ -231,6 +231,7 @@ SPOONCULAR_API_KEY=your_spoonacular_api_key
 
 <h2>Contributing</h2>
 <p>Contributions are welcome! Please fork the repository and create a pull request with your changes.</p>
+
 
 <h2>Contact</h2>
 <p>For questions, please refer to the project forum or contact the development team through the repository's contact information.</p>
