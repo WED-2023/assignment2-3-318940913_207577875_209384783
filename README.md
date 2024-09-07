@@ -9,7 +9,7 @@
 <h2>API Documentation</h2>
 
 <p>
-  You can find the detailed API documentation for the backend <a href="https://virtserver.swaggerhub.com/GuyBiton/Register/1.0.0">here</a>.
+  You can find the detailed API documentation for the backend <a href="https://app.swaggerhub.com/apis/GuyBiton/Register/1.0.0">here</a>.
 </p>
 
 <h2>Pages and API Endpoints Description</h2>
