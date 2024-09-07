@@ -1,5 +1,11 @@
 const DButils = require("./DButils");
 
+/**
+ * Marks a recipe as a favorite for the specified user.
+ * 
+ * @param {number} user_id - The ID of the user.
+ * @param {number} recipe_id - The ID of the recipe.
+ */
 async function markAsFavorite(user_id, recipe_id) {
   const checkIfFromDB = await DButils.execQuery(
     `SELECT 1 FROM MyRecipes WHERE recipe_id = ${recipe_id}`
@@ -17,12 +23,24 @@ async function markAsFavorite(user_id, recipe_id) {
   }
 }
 
+/**
+ * Removes a recipe from the user's favorites list.
+ * 
+ * @param {number} user_id - The ID of the user.
+ * @param {number} recipe_id - The ID of the recipe to be removed from favorites.
+ */
 async function removeFavorite(user_id, recipe_id) {
   await DButils.execQuery(
     `DELETE FROM UserFavorites WHERE userId='${user_id}' AND (recipeId='${recipe_id}' OR externalRecipeId='${recipe_id}')`
   );
 }
 
+/**
+ * Retrieves the list of favorite recipes for a user.
+ * 
+ * @param {number} user_id - The ID of the user.
+ * @returns {Promise<Array>} - A promise that resolves to an array of recipe IDs.
+ */
 async function getFavoriteRecipes(user_id) {
   const recipes = await DButils.execQuery(
     `SELECT recipeId, externalRecipeId, recipeSource FROM UserFavorites WHERE userId='${user_id}'`
@@ -40,6 +58,13 @@ async function getFavoriteRecipes(user_id) {
   return recipes_id;
 }
 
+/**
+ * Retrieves the list of recipes in the user's meal.
+ * 
+ * @param {number} user_id - The ID of the user.
+ * @param {number|null} recipe_id - The ID of a specific recipe to retrieve (optional).
+ * @returns {Promise<Array>} - A promise that resolves to an array of recipe information.
+ */
 async function getMyMealRecipes(user_id, recipe_id = null) {
   console.log("user_utils.js: recipe_id = ", recipe_id);
   const recipes = recipe_id
@@ -50,13 +75,13 @@ async function getMyMealRecipes(user_id, recipe_id = null) {
         `SELECT recipeId, externalRecipeId, recipeSource, recipeProgress FROM UserMeal WHERE userId='${user_id}'`
       );
   console.log("user_utils.js: before if (recipes.length == 0)");
-  // Process the results to return the correct ID based on the source
-  if (recipes.length == 0)
-  {
+
+  if (recipes.length == 0) {
     console.log("user_utils.js: inside if (recipes.length == 0)");
     throw { status: 401, message: "Recipe ID is not in user meal." };
   }
   console.log("user_utils.js: after if (recipes.length == 0)");
+  
   const recipes_info = recipes.map((recipe) => {
     if (recipe.recipeSource === "MyRecipes") {
       return {
@@ -72,9 +97,15 @@ async function getMyMealRecipes(user_id, recipe_id = null) {
   });
   console.log("user_utils.js: recipes_info", recipes_info);
   return recipes_info;
-  /// good till here
 }
 
+/**
+ * Fetches the progress of recipes and merges it with recipe previews.
+ * 
+ * @param {Array} recipes_info - Array containing information about recipes.
+ * @param {Array} recipePreviews - Array containing recipe preview data.
+ * @returns {Array} - Merged array with recipe progress.
+ */
 async function fetchRecipeProgress(recipes_info, recipePreviews) {
   return recipePreviews.map((recipePreview) => {
     const recipe_info = recipes_info.find(
@@ -87,12 +118,19 @@ async function fetchRecipeProgress(recipes_info, recipePreviews) {
   });
 }
 
+/**
+ * Adds a recipe to the user's meal.
+ * 
+ * @param {number} user_id - The ID of the user.
+ * @param {number} recipe_id - The ID of the recipe to be added to the meal.
+ */
 async function addToMyMeal(user_id, recipe_id) {
   console.log("user_utils - 1");
   const checkIfInUserMeal = await DButils.execQuery(`SELECT * FROM UserMeal WHERE userId='${user_id}' AND (recipeId='${recipe_id}' OR externalRecipeId='${recipe_id}')`);
 
   if (checkIfInUserMeal.length != 0)
     throw { status: 401, message: "Recipe is already in user meal." };
+
   const checkIfFromDB = await DButils.execQuery(
     `SELECT 1 FROM MyRecipes WHERE recipe_id = ${recipe_id}`
   );
@@ -113,13 +151,18 @@ async function addToMyMeal(user_id, recipe_id) {
   }
 }
 
-
+/**
+ * Updates the progress of a recipe in the user's meal.
+ * 
+ * @param {number} user_id - The ID of the user.
+ * @param {number} recipe_id - The ID of the recipe.
+ * @param {string} recipe_progress - The progress data of the recipe.
+ */
 async function updateRecipeProgressInMyMeal(
   user_id,
   recipe_id,
   recipe_progress
 ) {
-  // Check if the recipe exists in UserMeal
   const checkIfInUserMeal = await DButils.execQuery(`SELECT * FROM UserMeal WHERE userId='${user_id}' AND (recipeId=${recipe_id} OR externalRecipeId=${recipe_id})`);
 
   if (checkIfInUserMeal.length == 0)
@@ -130,6 +173,12 @@ async function updateRecipeProgressInMyMeal(
   );
 }
 
+/**
+ * Removes a recipe from the user's meal.
+ * 
+ * @param {number} user_id - The ID of the user.
+ * @param {number} recipe_id - The ID of the recipe to be removed from the meal.
+ */
 async function removeFromMyMeal(user_id, recipe_id) {
   console.log("removeFromMyMeal: recipe_id = ", recipe_id);
   await DButils.execQuery(
@@ -137,9 +186,11 @@ async function removeFromMyMeal(user_id, recipe_id) {
   );
 }
 
-// ====================== Last View ==============================================================================
+// ====================== Last View Section ==============================================================================
+
 /**
- *
+ * Updates the last viewed time of a recipe for a user or adds it if not present.
+ * 
  * @param {number} user_id - The ID of the user.
  * @param {number} recipe_id - The ID of the recipe.
  */
@@ -147,15 +198,14 @@ async function updateLastViewed(user_id, recipe_id) {
   const existingRecipeResult = await DButils.execQuery(`SELECT recipe_id FROM LastViewedRecipes WHERE user_id = '${user_id}' AND recipe_id = '${recipe_id}'`);
   if (existingRecipeResult.length > 0) {
     await DButils.execQuery(`UPDATE LastViewedRecipes SET viewed_at = NOW() WHERE user_id = '${user_id}' AND recipe_id = '${recipe_id}'`);
-  }
-  else{
+  } else {
     await DButils.execQuery(`INSERT INTO LastViewedRecipes (user_id, recipe_id, viewed_at) VALUES ('${user_id}', '${recipe_id}', NOW())`);
   }
 }
 
 /**
  * Retrieves the list of last viewed recipes for a user.
- *
+ * 
  * @param {number} user_id - The ID of the user.
  * @returns {Promise<Array>} - A promise that resolves to an array of recipe IDs.
  */
@@ -163,12 +213,24 @@ async function getLastViewedRecipes(user_id) {
   const recipes_id = await DButils.execQuery(`SELECT recipe_id FROM LastViewedRecipes WHERE user_id='${user_id}' ORDER BY viewed_at DESC LIMIT 4`);
   return recipes_id.map(row => row.recipe_id);
 }
+
+/**
+ * Retrieves all last viewed recipes for a user.
+ * 
+ * @param {number} user_id - The ID of the user.
+ * @returns {Promise<Array>} - A promise that resolves to an array of all recipe IDs viewed by the user.
+ */
 async function getAllLastViewedRecipes(user_id) {
   const recipes_id = await DButils.execQuery(`SELECT recipe_id FROM LastViewedRecipes WHERE user_id='${user_id}'`);
   return recipes_id.map(row => row.recipe_id);
 }
-// ====================================================================================================
 
+/**
+ * Validates the details of a new recipe.
+ * 
+ * @param {Object} recipe_details - The details of the new recipe.
+ * @throws Will throw an error if the recipe details are invalid.
+ */
 function newRecipeValidations(recipe_details) {
   if (!recipe_details.user_id)
     throw { status: 409, message: "Only logged in user can add new recipe." };
@@ -224,6 +286,11 @@ function newRecipeValidations(recipe_details) {
   }
 }
 
+/**
+ * Adds a new recipe to the database.
+ * 
+ * @param {Object} recipe_details - The details of the new recipe.
+ */
 async function addNewRecipe(recipe_details) {
   newRecipeValidations(recipe_details);
   await DButils.execQuery(
@@ -257,13 +324,20 @@ async function addNewRecipe(recipe_details) {
     );
   }
 }
+
+/**
+ * Retrieves all recipes created by a specific user.
+ * 
+ * @param {number} user_id - The ID of the user.
+ * @returns {Promise<Array>} - A promise that resolves to an array of recipe IDs.
+ */
 async function getMyRecipes(user_id) {
     const myRecipes = await DButils.execQuery(`SELECT * FROM MyRecipes WHERE user_id = '${user_id}'`);
     const myRecipes_id = myRecipes.map(recipe => {return recipe.recipe_id;});
     return myRecipes_id;
 }
 
-
+// Exporting all functions to be used in other modules
 exports.markAsFavorite = markAsFavorite;
 exports.getFavoriteRecipes = getFavoriteRecipes;
 exports.updateLastViewed = updateLastViewed;

@@ -4,11 +4,16 @@ const MySql = require("../routes/utils/MySql");
 const DButils = require("../routes/utils/DButils");
 const bcrypt = require("bcrypt");
 
+/**
+ * Register a new user.
+ * 
+ * This route registers a new user by checking for valid input parameters, validating the username, 
+ * first name, last name, email, country, and password, and ensuring the username does not already exist.
+ * If all checks pass, the new user is added to the database.
+ */
 router.post("/Register", async (req, res, next) => {
   try {
-    // parameters exists
-    // valid parameters
-    // username exists
+    // Extract user details from the request body
     let user_details = {
       username: req.body.username,
       firstname: req.body.firstname,
@@ -18,6 +23,7 @@ router.post("/Register", async (req, res, next) => {
       email: req.body.email,
     };
 
+    // Validate that all fields are provided
     if (
       !user_details.username ||
       !user_details.firstname ||
@@ -29,7 +35,7 @@ router.post("/Register", async (req, res, next) => {
       throw { status: 400, message: "All fields are required." };
     }
 
-    // Validate username
+    // Validate username: must be 3-8 characters and contain only alphabetic characters
     if (!/^[a-zA-Z]{3,8}$/.test(user_details.username)) {
       throw {
         status: 400,
@@ -38,7 +44,7 @@ router.post("/Register", async (req, res, next) => {
       };
     }
 
-    // Validate first name
+    // Validate first name: must contain only alphabetic characters
     if (!/^[a-zA-Z]+$/.test(user_details.firstname)) {
       throw {
         status: 400,
@@ -46,7 +52,7 @@ router.post("/Register", async (req, res, next) => {
       };
     }
 
-    // Validate last name
+    // Validate last name: must contain only alphabetic characters
     if (!/^[a-zA-Z]+$/.test(user_details.lastname)) {
       throw {
         status: 400,
@@ -54,7 +60,7 @@ router.post("/Register", async (req, res, next) => {
       };
     }
 
-    // Validate email
+    // Validate email: must be in a valid format
     if (!/^\S+@\S+\.\S+$/.test(user_details.email)) {
       throw {
         status: 400,
@@ -62,12 +68,12 @@ router.post("/Register", async (req, res, next) => {
       };
     }
 
-    // Validate country
+    // Validate country: must be provided
     if (!user_details.country) {
       throw { status: 400, message: "Country is required." };
     }
 
-    // Validate password
+    // Validate password: must be 5-10 characters, contain at least one number and one special character
     if (
       user_details.password.length < 5 ||
       user_details.password.length > 10 ||
@@ -81,21 +87,24 @@ router.post("/Register", async (req, res, next) => {
       };
     }
 
-    let users = [];
-    users = await DButils.execQuery("SELECT user_name from Users");
-
+    // Check if username already exists in the database
+    let users = await DButils.execQuery("SELECT user_name from Users");
     if (users.find((x) => x.user_name === user_details.username))
       throw { status: 409, message: "Username already exists." };
 
-    // add the new username
+    // Hash the password
     let hash_password = bcrypt.hashSync(
       user_details.password,
       parseInt(process.env.bcrypt_saltRounds)
     );
+
+    // Insert the new user into the database
     await DButils.execQuery(
       `INSERT INTO Users (user_name, first_name, last_name, country, password, email) VALUES ('${user_details.username}', '${user_details.firstname}', '${user_details.lastname}',
       '${user_details.country}', '${hash_password}', '${user_details.email}')`
     );
+
+    // Send success response
     res
       .status(201)
       .send({ message: "User successfully registered.", success: true });
@@ -104,13 +113,23 @@ router.post("/Register", async (req, res, next) => {
   }
 });
 
+/**
+ * Log in an existing user.
+ * 
+ * This route logs in an existing user by checking if the username and password match the stored credentials.
+ * It also checks if the user is already logged in.
+ */
 router.post("/Login", async (req, res, next) => {
   try {
+    // Validate that both username and password are provided
     if (!req.body.username || !req.body.password)
       throw { status: 400, message: "All fields are required." };
-    // check that username exists
+
+    // Check if the user is already logged in
     if (req.session.user_id)
       throw { status: 409, message: "User already logged in" };
+
+    // Check if the username exists in the database
     const users = await DButils.execQuery("SELECT user_name FROM Users");
     if (!users.find((x) => x.user_name === req.body.username))
       throw {
@@ -118,31 +137,38 @@ router.post("/Login", async (req, res, next) => {
         message: "Invalid input, username or password is invalid.",
       };
 
-    // check that the password is correct
+    // Fetch user details from the database
     const user = (
       await DButils.execQuery(
         `SELECT * FROM Users WHERE user_name = '${req.body.username}'`
       )
     )[0];
 
+    // Validate the provided password with the stored hashed password
     if (!bcrypt.compareSync(req.body.password, user.password)) {
       throw { status: 401, message: "Username or Password incorrect" };
     }
 
-    // Set cookie
+    // Set session for the user
     req.session.user_id = user.user_id;
 
-    // return cookie
+    // Send success response with cookie
     res.status(200).send({ message: "login succeeded", success: true });
   } catch (error) {
     next(error);
   }
 });
 
+/**
+ * Log out the current user.
+ * 
+ * This route logs out the current user by resetting the session information.
+ */
 router.post("/Logout", function (req, res, next) {
   try {
+    // Check if a user session exists
     if (req.session.user_id) {
-      req.session.reset(); // reset the session info --> send cookie when  req.session == undefined!!
+      req.session.reset(); // Reset session info and send cookie when req.session == undefined
       res.send({ success: true, message: "Logout succeeded." });
     } else {
       throw { status: 409, message: "You are not logged in." };

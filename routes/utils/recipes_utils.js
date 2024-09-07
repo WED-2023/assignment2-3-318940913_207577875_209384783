@@ -2,13 +2,14 @@ const axios = require("axios");
 const DButils = require("../utils/DButils");
 const api_domain = "https://api.spoonacular.com/recipes";
 
-// ====================== Rando Recipes  ==============================================================================
+// ====================== Random Recipes ==============================================================================
 
 /**
- * Get recipes list from spooncular response and extract the relevant recipe data for preview
- * @param {*} recipes_info
+ * Fetch a list of random recipes from the Spoonacular API and extract relevant data for preview.
+ * @param {number} number - Number of random recipes to fetch. Default is 3.
+ * @returns {Promise<Array>} - A promise that resolves to an array of recipe previews.
+ * @throws {Object} - Throws an error if no random recipes are found or there is an issue with the Spoonacular API.
  */
-
 async function getRandomRecipes(number = 3) {
   const params = {
     apiKey: process.env.spooncular_apiKey,
@@ -16,8 +17,9 @@ async function getRandomRecipes(number = 3) {
   };
   const url = `${api_domain}/random`;
   const randomRecipes = await axios.get(url, { params });
-  // return response.data.recipes;
+
   if (randomRecipes.data.recipes.length > 0) {
+    // Map and return the relevant recipe details for preview
     return randomRecipes.data.recipes.map((recipe) => ({
       id: recipe.id,
       title: recipe.title,
@@ -35,13 +37,22 @@ async function getRandomRecipes(number = 3) {
     };
   }
 }
+
 //====================================================================================================
+
+/**
+ * Fetches the full information of a recipe either from the database or from the Spoonacular API.
+ * @param {number} recipe_id - The ID of the recipe to retrieve.
+ * @param {boolean} is_search - Indicates if the request is part of a search operation.
+ * @returns {Promise<Object>} - A promise that resolves to an object containing recipe information.
+ */
 async function getRecipeInformation(recipe_id, is_search = false) {
   const checkIfFromDB = await DButils.execQuery(
     `SELECT 1 FROM MyRecipes WHERE recipe_id = '${recipe_id}'`
   );
 
   if (checkIfFromDB.length > 0 && !is_search) {
+    // Fetch recipe from the database
     const recipeInformataion = (
       await DButils.execQuery(
         `SELECT * FROM myrecipes WHERE recipe_id = '${recipe_id}'`
@@ -49,6 +60,7 @@ async function getRecipeInformation(recipe_id, is_search = false) {
     )[0];
     return { recipeInformataion: recipeInformataion, fromDB: true };
   } else {
+    // Fetch recipe from Spoonacular API
     const recipeInformataion = await axios.get(
       `${api_domain}/${recipe_id}/information`,
       {
@@ -62,11 +74,19 @@ async function getRecipeInformation(recipe_id, is_search = false) {
   }
 }
 
+/**
+ * Fetches the recipe details for preview based on the recipe ID.
+ * @param {number} recipe_id - The ID of the recipe to retrieve details for.
+ * @param {boolean} is_search - Indicates if the request is part of a search operation.
+ * @returns {Promise<Object>} - A promise that resolves to an object containing recipe preview details.
+ */
 async function getRecipeDetails(recipe_id, is_search = false) {
   let recipe_info = await getRecipeInformation(recipe_id);
   const recipeInformataion = recipe_info.recipeInformataion;
   const fromDB = recipe_info.fromDB;
+
   if (fromDB && !is_search) {
+    // Return recipe details from the database
     let {
       recipe_id,
       title,
@@ -87,6 +107,7 @@ async function getRecipeDetails(recipe_id, is_search = false) {
       glutenFree: Boolean(is_gluten_free),
     };
   } else {
+    // Return recipe details from Spoonacular API
     let {
       id,
       title,
@@ -110,8 +131,15 @@ async function getRecipeDetails(recipe_id, is_search = false) {
   }
 }
 
+/**
+ * Retrieves the full information of a recipe from either the database or the Spoonacular API.
+ * @param {number} recipe_id - The ID of the recipe to retrieve full information for.
+ * @param {boolean} fromDB - Flag to indicate whether to fetch from the database.
+ * @returns {Promise<Object>} - A promise that resolves to an object containing full recipe information.
+ */
 async function getRecipeFullInformation(recipe_id, fromDB) {
   if (fromDB) {
+    // Fetch full recipe information from the database
     const recipe_informataion = (
       await DButils.execQuery(
         `SELECT * FROM myrecipes WHERE recipe_id = '${recipe_id}'`
@@ -132,6 +160,7 @@ async function getRecipeFullInformation(recipe_id, fromDB) {
 
     return recipe;
   } else {
+    // Fetch full recipe information from Spoonacular API
     return await axios.get(`${api_domain}/${recipe_id}/information`, {
       params: {
         includeNutrition: false,
@@ -141,12 +170,18 @@ async function getRecipeFullInformation(recipe_id, fromDB) {
   }
 }
 
+/**
+ * Retrieves the full details of a specific recipe by its ID.
+ * @param {number} recipe_id - The ID of the recipe to retrieve full details for.
+ * @returns {Promise<Object>} - A promise that resolves to an object containing full recipe details.
+ */
 async function getRecipeFullDetails(recipe_id) {
   const checkIfFromDB = await DButils.execQuery(
     `SELECT 1 FROM MyRecipes WHERE recipe_id = '${recipe_id}'`
   );
-  // If its not frrom DB
+
   if (checkIfFromDB.length == 0) {
+    // Fetch recipe details from Spoonacular API
     let recipe = await getRecipeFullInformation(recipe_id);
     let {
       id,
@@ -175,6 +210,7 @@ async function getRecipeFullDetails(recipe_id) {
       servings: servings,
     };
   } else {
+    // Fetch recipe details from the database
     let recipe = await getRecipeFullInformation(recipe_id, true);
     let {
       recipe_id: db_recipe_id,
@@ -188,11 +224,7 @@ async function getRecipeFullDetails(recipe_id) {
     } = recipe.recipe_informataion;
     let ingredients = [];
     for (const ingredient of recipe.recipe_ingredients) {
-      console.log("ingredient = ",ingredient);
       let { name, quantity, unit } = ingredient;
-      console.log("name = ",name);
-      console.log("quantity = ",quantity);
-      console.log("unit = ",unit);
       ingredients.push({ originalName: name, amount: quantity, unit: unit });
     }
     let instructions = [];
@@ -216,6 +248,16 @@ async function getRecipeFullDetails(recipe_id) {
   }
 }
 
+/**
+ * Searches for recipes based on various parameters.
+ * @param {string} recipeName - Name of the recipe to search.
+ * @param {string} cuisines - Comma-separated list of cuisines to filter by.
+ * @param {string} diets - Comma-separated list of diets to filter by.
+ * @param {string} intolerances - Comma-separated list of intolerances to filter by.
+ * @param {number} number - Number of recipes to retrieve.
+ * @param {string} sort - Sorting order for the search results.
+ * @returns {Promise<Array>} - A promise that resolves to an array of recipe previews.
+ */
 async function searchRecipe(
   recipeName,
   cuisines,
@@ -239,6 +281,12 @@ async function searchRecipe(
   return await getRecipesPreview(recipeIds, true);
 }
 
+/**
+ * Retrieves previews of multiple recipes based on an array of recipe IDs.
+ * @param {Array} recipes_id_array - Array of recipe IDs to retrieve previews for.
+ * @param {boolean} is_search - Indicates if the request is part of a search operation.
+ * @returns {Promise<Array>} - A promise that resolves to an array of recipe previews.
+ */
 async function getRecipesPreview(recipes_id_array, is_search = false) {
   const recipesDetailsArray = [];
   const recipeDetailsPromises = recipes_id_array.map(async (recipe_id) => {
@@ -252,6 +300,7 @@ async function getRecipesPreview(recipes_id_array, is_search = false) {
   return recipesDetailsArray;
 }
 
+// Export functions to be used in other modules
 exports.searchRecipe = searchRecipe;
 exports.getRecipeDetails = getRecipeDetails;
 exports.getRecipeFullDetails = getRecipeFullDetails;

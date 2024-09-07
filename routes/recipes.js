@@ -2,10 +2,18 @@ var express = require("express");
 var router = express.Router();
 const recipes_utils = require("./utils/recipes_utils");
 
-router.get("/", (req, res) => res.send("im here"));
+// Default route to check server status
+router.get("/", (req, res) => res.send("I'm here"));
 
 /**
- * This path is for searching a recipe
+ * This route is used for searching recipes based on various parameters.
+ * It accepts the following query parameters:
+ * - recipeName: The name of the recipe to search for.
+ * - cuisine: The type of cuisine to filter by.
+ * - diet: The diet type to filter by (e.g., vegetarian, vegan).
+ * - intolerance: Any dietary intolerance to filter out (e.g., gluten).
+ * - number: The number of recipes to return (default is 5).
+ * - sort: The sorting order for the results.
  */
 router.get("/search", async (req, res, next) => {
   try {
@@ -13,7 +21,7 @@ router.get("/search", async (req, res, next) => {
     const cuisine = req.query.cuisine;
     const diet = req.query.diet;
     const intolerance = req.query.intolerance;
-    const number = req.query.number || 5;
+    const number = req.query.number || 5; // Default to 5 results if not specified
     const sort = req.query.sort;
     const results = await recipes_utils.searchRecipe(
       recipeName,
@@ -29,9 +37,14 @@ router.get("/search", async (req, res, next) => {
   }
 });
 
+/**
+ * This route returns a specified number of random recipes.
+ * It accepts the following query parameter:
+ * - number: The number of random recipes to return (default is 3).
+ */
 router.get("/random", async (req, res, next) => {
   try {
-    const number = req.query.number || 3;
+    const number = req.query.number || 3; // Default to 3 random recipes if not specified
     const randomRecipes = await recipes_utils.getRandomRecipes(number);
     res.status(200).send(randomRecipes);
   } catch (error) {
@@ -39,6 +52,11 @@ router.get("/random", async (req, res, next) => {
   }
 });
 
+/**
+ * This route retrieves the full details of a specific recipe by its ID.
+ * It accepts the following path parameter:
+ * - recipe_id: The ID of the recipe to retrieve details for.
+ */
 router.get("/recipe/:recipe_id", async (req, res, next) => {
   try {
     const recipe_id = req.params.recipe_id;
@@ -49,6 +67,11 @@ router.get("/recipe/:recipe_id", async (req, res, next) => {
   }
 });
 
+/**
+ * This route provides a preview of multiple recipes based on their IDs.
+ * It accepts the following request body parameter:
+ * - recipes_id: An array of recipe IDs to get previews for.
+ */
 router.post("/RecipesPreview", async (req, res, next) => {
   try {
     const recipes_id = req.body.recipes_id;
