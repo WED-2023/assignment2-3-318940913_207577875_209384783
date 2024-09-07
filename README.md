@@ -167,6 +167,6 @@ COOKIE_SECRET=your_cookie_secret
 
 <ul>
   <li><a href="mailto:guybito@post.bgu.ac.il">Guy Biton - guybito@post.bgu.ac.il</a></li>
-  <li><a href="mailto:danvai@post.bgu.ac.il">Daniel Vainshtein - danvai@post.bgu.ac.il</a></li>
-  <li><a href="mailto:schyuval@post.bgu.ac.il">Yuval Schy - schyuval@post.bgu.ac.il</a></li>
+  <li><a href="mailto:danvai@post.bgu.ac.il">Dan Vaitzman - danvai@post.bgu.ac.il</a></li>
+  <li><a href="mailto:schyuval@post.bgu.ac.il">Yuval Schwartz - schyuval@post.bgu.ac.il</a></li>
 </ul>
