@@ -9,7 +9,7 @@ async function markAsFavorite(user_id, recipe_id) {
     await DButils.execQuery(
       `insert into UserFavorites (userId, externalRecipeId, recipeSource) values ('${user_id}',${recipe_id},'${RecipeType}')`
     );
-  } else {
+  } else { 
     const RecipeType = "MyRecipes";
     await DButils.execQuery(
       `insert into UserFavorites (userId, recipeId, recipeSource) values ('${user_id}',${recipe_id},'${RecipeType}')`
@@ -131,6 +131,7 @@ async function updateRecipeProgressInMyMeal(
 }
 
 async function removeFromMyMeal(user_id, recipe_id) {
+  console.log("removeFromMyMeal: recipe_id = ", recipe_id);
   await DButils.execQuery(
     `DELETE FROM UserMeal WHERE userId='${user_id}' AND (recipeId=${recipe_id} OR externalRecipeId=${recipe_id})`
   );

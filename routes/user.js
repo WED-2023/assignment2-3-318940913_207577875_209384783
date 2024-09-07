@@ -170,6 +170,7 @@ router.get("/MyMeal", async (req, res, next) => {
   }
 });
 
+
 router.post("/MyMeal", async (req, res, next) => {
   try {
     console.log("1");
@@ -185,6 +186,40 @@ router.post("/MyMeal", async (req, res, next) => {
     console.log("4");
     res.status(200).send("The Recipe successfully add to user meal.");
     console.log("5");
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.put("/MyMeal", async (req, res, next) => {
+  try{
+    if (!req.session.user_id) {
+      throw { status: 401, message: "No User Logged in." };
+    }
+    const user_id = req.session.user_id;
+    const recipes_order_id = req.body.recipes_order_id;
+    console.log("recipes_order_id = ", recipes_order_id);
+    const recipes_info = await user_utils.getMyMealRecipes(user_id);
+    console.log("recipes_info = ", recipes_info);
+    for(recipe of recipes_info)
+      await user_utils.removeFromMyMeal(user_id, recipe.recipe_id);
+    for(const recipe_id of recipes_order_id)
+    {
+      const matchingRecipe = recipes_info.find((recipe) => recipe.recipe_id == recipe_id);
+      if (matchingRecipe) {
+        console.log(`Found matching recipe: ${JSON.stringify(matchingRecipe)}`);
+        // Add the recipe to table again
+        await user_utils.addToMyMeal(user_id, recipe_id);
+        // Save progress for the recipe
+        const recipe_progress = matchingRecipe.recipe_progress;
+        await user_utils.updateRecipeProgressInMyMeal(user_id, recipe_id, recipe_progress);
+        console.log(`Recipe ID: ${recipe_id}, Progress: ${recipe_progress}`);
+      } else {
+        console.log(`No matching recipe found for recipe ID: ${recipe_id}`);
+        throw { status: 401, message: "No matching recipe found for recipe ID." };
+      }
+    }
+    res.status(200).send("The Recipes successfully reordered.");
   } catch (error) {
     next(error);
   }
