@@ -232,8 +232,5 @@ SPOONCULAR_API_KEY=your_spoonacular_api_key
 <h2>Contributing</h2>
 <p>Contributions are welcome! Please fork the repository and create a pull request with your changes.</p>
 
-<h2>License</h2>
-<p>This project is licensed under the MIT License.</p>
-
 <h2>Contact</h2>
 <p>For questions, please refer to the project forum or contact the development team through the repository's contact information.</p>
