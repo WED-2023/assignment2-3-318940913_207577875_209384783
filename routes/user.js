@@ -7,12 +7,12 @@ const recipe_utils = require("./utils/recipes_utils");
 /**
  * Middleware to authenticate all incoming requests.
  * Checks if a session exists and validates the user against the database.
- * If the user is authenticated, the user ID is stored in `req.user_id` and proceeds to the next middleware or route handler.
+ * If the user is authenticated, the user ID is stored in req.user_id and proceeds to the next middleware or route handler.
  * Otherwise, it responds with a 401 Unauthorized status.
  */
 router.use(async function (req, res, next) {
   if (req.session && req.session.user_id) {
-    DButils.execQuery("SELECT user_id FROM Users")
+    DButils.execQuery(`SELECT user_id FROM users`)
       .then((users) => {
         if (users.find((x) => x.user_id === req.session.user_id)) {
           req.user_id = req.session.user_id;
@@ -126,6 +126,7 @@ router.get("/FavoritesRecipes", async (req, res, next) => {
     }
     res.status(200).send(recipes_id);
   } catch (error) {
+    console.log("2.3 user.js - line 129 get(/FavoritesRecipes) error = ",error.message);
     next(error);
   }
 });
@@ -262,7 +263,7 @@ router.put("/MyMeal", async (req, res, next) => {
         (recipe) => recipe.recipe_id == recipe_id
       );
       if (matchingRecipe) {
-        console.log(`Found matching recipe: ${JSON.stringify(matchingRecipe)}`);
+        console.log('Found matching recipe: ${JSON.stringify(matchingRecipe)}');
         // Add the recipe to table again
         await user_utils.addToMyMeal(user_id, recipe_id);
         // Save progress for the recipe
@@ -272,9 +273,9 @@ router.put("/MyMeal", async (req, res, next) => {
           recipe_id,
           recipe_progress
         );
-        console.log(`Recipe ID: ${recipe_id}, Progress: ${recipe_progress}`);
+        console.log('Recipe ID: ${recipe_id}, Progress: ${recipe_progress}');
       } else {
-        console.log(`No matching recipe found for recipe ID: ${recipe_id}`);
+        console.log('No matching recipe found for recipe ID: ${recipe_id}');
         throw {
           status: 401,
           message: "No matching recipe found for recipe ID.",

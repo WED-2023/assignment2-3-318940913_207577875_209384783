@@ -6,10 +6,6 @@ const bcrypt = require("bcrypt");
 
 /**
  * Register a new user.
- *
- * This route registers a new user by checking for valid input parameters, validating the username,
- * first name, last name, email, country, and password, and ensuring the username does not already exist.
- * If all checks pass, the new user is added to the database.
  */
 router.post("/Register", async (req, res, next) => {
   try {
@@ -88,7 +84,7 @@ router.post("/Register", async (req, res, next) => {
     }
 
     // Check if username already exists in the database
-    let users = await DButils.execQuery("SELECT user_name from Users");
+    let users = await DButils.execQuery("SELECT user_name from users");
     if (users.find((x) => x.user_name === user_details.username))
       throw { status: 409, message: "Username already exists." };
 
@@ -100,7 +96,7 @@ router.post("/Register", async (req, res, next) => {
 
     // Insert the new user into the database
     await DButils.execQuery(
-      `INSERT INTO Users (user_name, first_name, last_name, country, password, email) VALUES ('${user_details.username}', '${user_details.firstname}', '${user_details.lastname}',
+      `INSERT INTO users (user_name, first_name, last_name, country, password, email) VALUES ('${user_details.username}', '${user_details.firstname}', '${user_details.lastname}',
       '${user_details.country}', '${hash_password}', '${user_details.email}')`
     );
 
@@ -115,9 +111,6 @@ router.post("/Register", async (req, res, next) => {
 
 /**
  * Log in an existing user.
- *
- * This route logs in an existing user by checking if the username and password match the stored credentials.
- * It also checks if the user is already logged in.
  */
 router.post("/Login", async (req, res, next) => {
   try {
@@ -130,7 +123,7 @@ router.post("/Login", async (req, res, next) => {
       throw { status: 409, message: "User already logged in" };
 
     // Check if the username exists in the database
-    const users = await DButils.execQuery("SELECT user_name FROM Users");
+    const users = await DButils.execQuery(`SELECT user_name FROM users`);
     if (!users.find((x) => x.user_name === req.body.username))
       throw {
         status: 401,
@@ -140,7 +133,7 @@ router.post("/Login", async (req, res, next) => {
     // Fetch user details from the database
     const user = (
       await DButils.execQuery(
-        `SELECT * FROM Users WHERE user_name = '${req.body.username}'`
+        `SELECT * FROM users WHERE user_name = '${req.body.username}'`
       )
     )[0];
 
@@ -161,14 +154,11 @@ router.post("/Login", async (req, res, next) => {
 
 /**
  * Log out the current user.
- *
- * This route logs out the current user by resetting the session information.
  */
 router.post("/Logout", function (req, res, next) {
   try {
-    // Check if a user session exists
     if (req.session.user_id) {
-      req.session.reset(); // Reset session info and send cookie when req.session == undefined
+      req.session.reset(); // Reset session info
       res.send({ success: true, message: "Logout succeeded." });
     } else {
       throw { status: 409, message: "You are not logged in." };
