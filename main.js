@@ -34,14 +34,18 @@ app.use(express.urlencoded({ extended: false })); // Parse application/x-www-for
 
 // Serve static files such as images, CSS files, and JavaScript files
 app.use(express.static(path.join(__dirname, "public"))); // Serve static files from the 'public' directory
-
+//local :
 // Serve static files for the local environment
-app.use(express.static(path.join(__dirname, "dist"))); // Serve static files from the 'dist' directory for local development
+// app.use(express.static(path.join(__dirname, "dist"))); // Serve static files from the 'dist' directory for local development
+// remote :
+app.use(express.static(path.join(__dirname, "../assignment2-1-318940913_207577875_209384783/dist")));
 
 // Serve the index.html file on the root path
 app.get("/", function (req, res) {
+  //remote:
+  res.sendFile(path.join(__dirname,"../assignment2-1-318940913_207577875_209384783/dist/index.html"));
   // Local environment:
-  res.sendFile(__dirname + "/index.html");
+  // res.sendFile(__dirname + "/index.html");
 });
 
 // Set up CORS configuration
@@ -96,16 +100,16 @@ app.use(function (err, req, res, next) {
 });
 
 // Start the server and listen on the specified port
-const server = app.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
-});
+// const server = app.listen(port, () => {
+//   console.log(`Server listening on port ${port}`);
+// });
 
-// Gracefully handle server shutdown on interrupt signal (SIGINT)
-process.on("SIGINT", function () {
-  if (server) {
-    server.close(() => console.log("Server closed")); // Close server and log message
-  }
-  process.exit(); // Exit the process
-});
+// // Gracefully handle server shutdown on interrupt signal (SIGINT)
+// process.on("SIGINT", function () {
+//   if (server) {
+//     server.close(() => console.log("Server closed")); // Close server and log message
+//   }
+//   process.exit(); // Exit the process
+// });
 
 module.exports = app; // Export the Express app instance
