@@ -47,6 +47,7 @@ async function getRandomRecipes(number = 4) {
  * @returns {Promise<Object>} - A promise that resolves to an object containing recipe information.
  */
 async function getRecipeInformation(recipe_id, is_search = false) {
+  
   const checkIfFromDB = await DButils.execQuery(
     `SELECT 1 FROM myrecipes WHERE recipe_id = '${recipe_id}'`
   );

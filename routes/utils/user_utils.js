@@ -7,6 +7,7 @@ const DButils = require("./DButils");
  * @param {number} recipe_id - The ID of the recipe.
  */
 async function markAsFavorite(user_id, recipe_id) {
+  if(recipe_id == undefined) return;
   const checkIfFromDB = await DButils.execQuery(
     `SELECT 1 FROM myrecipes WHERE recipe_id = '${recipe_id}'`
   );
@@ -31,6 +32,7 @@ async function markAsFavorite(user_id, recipe_id) {
  * @param {number} recipe_id - The ID of the recipe to be removed from favorites.
  */
 async function removeFavorite(user_id, recipe_id) {
+  if(recipe_id == undefined) return;
   await DButils.execQuery(
     `DELETE FROM userfavorites WHERE userId = '${user_id}' AND (recipeId = '${recipe_id}' OR externalRecipeId = '${recipe_id}')`
   );
@@ -46,8 +48,11 @@ async function getFavoriteRecipes(user_id) {
   const recipes = await DButils.execQuery(`SELECT recipeId, externalRecipeId, recipeSource FROM userfavorites WHERE userId = '${user_id}'`);
 
   // Process the results to return the correct ID based on the source
-  const recipes_id = recipes.map((recipe) => {
-    console.log("2.3 user utils - line 50 internal recipe id = ",recipe.recipeId," extrnal recipe id  ",recipe.externalRecipeId);
+  const recipes_id = recipes
+  .filter((recipe) => !(recipe.recipeId == 'undefined' && recipe.externalRecipeId == 'undefined'))
+  .map((recipe) => {
+    console.log("2.3 user utils - line 50 internal recipe id = ", recipe.recipeId, " external recipe id  ", recipe.externalRecipeId);
+    
     if (recipe.recipeSource === "MyRecipes") {
       return recipe.recipeId;
     } else if (recipe.recipeSource === "Spoonacular") {
@@ -80,18 +85,31 @@ async function getMyMealRecipes(user_id, recipe_id = null) {
   console.log("user_utils.js: after if (recipes.length == 0)");
 
   const recipes_info = recipes.map((recipe) => {
+    let recipe_progress = null;
+    
+    // Check if recipeProgress is not null before parsing
+    if (recipe.recipeProgress) {
+      try {
+        recipe_progress = JSON.parse(recipe.recipeProgress);
+      } catch (error) {
+        console.error(`Error parsing recipeProgress for recipe_id: ${recipe.recipeId || recipe.externalRecipeId}`, error);
+        recipe_progress = null;  // Set to null if JSON parsing fails
+      }
+    }
+
     if (recipe.recipeSource === "MyRecipes") {
       return {
         recipe_id: recipe.recipeId,
-        recipe_progress: JSON.parse(recipe.recipeProgress),
+        recipe_progress,
       };
     } else if (recipe.recipeSource === "Spoonacular") {
       return {
         recipe_id: recipe.externalRecipeId,
-        recipe_progress: JSON.parse(recipe.recipeProgress),
+        recipe_progress,
       };
     }
   });
+
   console.log("user_utils.js: recipes_info", recipes_info);
   return recipes_info;
 }
@@ -122,6 +140,7 @@ async function fetchRecipeProgress(recipes_info, recipePreviews) {
  * @param {number} recipe_id - The ID of the recipe to be added to the meal.
  */
 async function addToMyMeal(user_id, recipe_id) {
+  if(recipe_id == undefined) return;
   console.log("user_utils - 1");
   const checkIfInUserMeal = await DButils.execQuery(
     `SELECT * FROM usermeal WHERE userId = '${user_id}' AND (recipeId = '${recipe_id}' OR externalRecipeId = '${recipe_id}')`
@@ -174,6 +193,7 @@ async function updateRecipeProgressInMyMeal(user_id, recipe_id, recipe_progress)
  * @param {number} recipe_id - The ID of the recipe to be removed from the meal.
  */
 async function removeFromMyMeal(user_id, recipe_id) {
+  if(recipe_id == undefined) return;
   console.log("removeFromMyMeal: recipe_id = ", recipe_id);
   await DButils.execQuery(
     `DELETE FROM usermeal WHERE userId = '${user_id}' AND (recipeId = '${recipe_id}' OR externalRecipeId = '${recipe_id}')`

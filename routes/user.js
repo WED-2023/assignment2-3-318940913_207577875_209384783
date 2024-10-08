@@ -195,7 +195,9 @@ router.get("/MyMeal", async (req, res, next) => {
     }
     const user_id = req.session.user_id;
     const recipes_info = await user_utils.getMyMealRecipes(user_id);
-    const recipes_id = recipes_info.map((recipe) => {
+    const recipes_id = recipes_info
+    .filter((recipe) => !(recipe.recipeId === 'undefined' && recipe.externalRecipeId === 'undefined'))
+    .map((recipe) => {
       return recipe.recipe_id;
     });
     if (recipes_id.length == 0) {
