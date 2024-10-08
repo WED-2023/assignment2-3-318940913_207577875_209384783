@@ -194,15 +194,19 @@ router.get("/MyMeal", async (req, res, next) => {
       throw { status: 401, message: "No User Logged in." };
     }
     const user_id = req.session.user_id;
+    console.log("user_id = ", user_id);
     const recipes_info = await user_utils.getMyMealRecipes(user_id);
+    if (recipes_info.length == 0) {
+      throw { status: 203, message: "This user has no recipes in his meal." };
+    }
     const recipes_id = recipes_info
     .filter((recipe) => !(recipe.recipeId === 'undefined' && recipe.externalRecipeId === 'undefined'))
     .map((recipe) => {
       return recipe.recipe_id;
     });
-    if (recipes_id.length == 0) {
-      throw { status: 203, message: "This user has no recipes in his meal." };
-    }
+    // if (recipes_id.length == 0) {
+    //   throw { status: 203, message: "This user has no recipes in his meal." };
+    // }
     // Get the recipe previews
     const recipePreviews = await recipe_utils.getRecipesPreview(recipes_id);
     // Merge recipe progress into the recipe previews

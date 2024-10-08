@@ -80,7 +80,8 @@ async function getMyMealRecipes(user_id, recipe_id = null) {
 
   if (recipes.length == 0) {
     console.log("user_utils.js: inside if (recipes.length == 0)");
-    throw { status: 401, message: "Recipe ID is not in user meal." };
+    return [];
+    // throw { status: 401, message: "Recipe ID is not in user meal." };
   }
   console.log("user_utils.js: after if (recipes.length == 0)");
 
